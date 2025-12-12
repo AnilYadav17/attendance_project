@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Student Dashboard - QR Attendance{% endblock %}
+{% block header_title %}Student Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+
+{% endblock %}
+
+{% block content %}
+<div class="welcome-banner fade-in">
+    <h2>👋 Welcome back, {{ user.first_name }}!</h2>
+    <p>Ready to mark your attendance? Scan the QR code displayed by your teacher.</p>
+</div>
+
+<div class="dashboard-stats fade-in">
+    <div class="stat-card gradient-purple">
+        <div class="stat-icon">🎓</div>
+        <h3>{{ total_attendance }}</h3>
+        <p>Classes Attended</p>
+    </div>
+    <div class="stat-card gradient-blue">
+        <div class="stat-icon">📊</div>
+        <h3>{{ attendance_percentage|default:"--" }}%</h3>
+        <p>Overall Attendance</p>
+    </div>
+    <div class="stat-card gradient-pink">
+        <div class="stat-icon">🔥</div>
+        <h3>{{ current_streak|default:"0" }}</h3>
+        <p>Day Streak</p>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <div class="card fade-in">
+        <h3>🎯 Quick Actions</h3>
+        <div class="quick-actions">
+            <a href="{% url 'scan_qr' %}" class="action-btn primary">
+                <div class="action-icon">📱</div>
+                <h3>Scan QR Code</h3>
+                <p>Mark your attendance now</p>
+            </a>
+            <a href="{% url 'attendance_history' %}" class="action-btn secondary">
+                <div class="action-icon">📜</div>
+                <h3>View History</h3>
+                <p>Check past attendance records</p>
+            </a>
+        </div>
+    </div>
+
+    <div class="card fade-in">
+        <h3>📈 Attendance Overview</h3>
+        <div class="chart-container" style="height: 300px;">
+            <canvas id="attendanceChart"></canvas>
+        </div>
+    </div>
+</div>
+
+{{ chart_labels|json_script:"chart-labels" }}
+{{ chart_data|json_script:"chart-data" }}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/charts.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendance History - AMS{% endblock %}
+{% block header_title %}My Attendance History{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h3>History</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-sno">S.No.</th>
+                    <th class="col-date">Date</th>
+                    <th class="col-date">Time</th>
+                    <th class="col-subjects">Subject</th>
+                    <th class="col-name">Teacher</th>
+                    <th class="col-status">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ record.timestamp|date:"M d, Y" }}</td>
+                    <td>{{ record.timestamp|time:"H:i" }}</td>
+                    <td>{{ record.session.subject.name }}</td>
+                    <td>{{ record.session.teacher.user.get_full_name }}</td>
+                    <td><span class="status-badge present">Present</span></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">No attendance records found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

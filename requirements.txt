@@ -1,0 +1,6 @@
+Django>=4.2
+mysqlclient
+python-dotenv
+qrcode
+Pillow
+chart.js

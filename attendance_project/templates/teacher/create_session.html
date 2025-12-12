@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Session - AMS{% endblock %}
+{% block header_title %}Create Attendance Session{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <h3>New Session Details</h3>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="subject">Subject</label>
+            <select name="subject" id="subject" class="form-control" required>
+                <option value="">Select Subject</option>
+                {% for subject in subjects %}
+                    <option value="{{ subject.id }}">{{ subject.name }} ({{ subject.code }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="batch">Batch</label>
+            <select name="batch" id="batch" class="form-control" required>
+                <option value="">Select Batch</option>
+                {% for batch in batches %}
+                    <option value="{{ batch.id }}">{{ batch.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Generate QR Code</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Subjects - AMS{% endblock %}
+{% block header_title %}Manage Subjects{% endblock %}
+
+{% block content %}
+<button class="btn btn-primary" onclick="document.getElementById('addSubjectModal').style.display='block'" style="margin-bottom: 20px;">Add Subject</button>
+
+<div class="card">
+    <h3>All Subjects</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                    <th class="col-sno">S.No.</th>
+                    <th class="col-name">Subject Name</th>
+                    <th class="col-code">Code</th>
+                    <th class="col-batch">Batch</th>
+                    <th class="col-actions">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for subject in subjects %}
+                <tr>
+                    <td class="col-sno">{{ forloop.counter }}</td>
+                    <td class="col-name">{{ subject.name }}</td>
+                    <td class="col-code">{{ subject.code }}</td>
+                    <td class="col-batch">{{ subject.batch.name }}</td>
+                    <td class="col-actions">
+                        <div class="action-buttons">
+                            <a href="{% url 'edit_subject' subject.id %}" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem; margin: 0; background: var(--primary-color); box-shadow: none;">Edit</a>
+                            <form method="post" style="display: inline; margin: 0;" onsubmit="return confirm('Delete this subject?');">
+                                {% csrf_token %}
+                                <input type="hidden" name="delete" value="1">
+                                <input type="hidden" name="subject_id" value="{{ subject.id }}">
+                                <button type="submit" class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem; margin: 0;">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5">No subjects found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Subject Modal -->
+<div id="addSubjectModal" class="modal" style="display:none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+    <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 40%; border-radius: 8px;">
+        <span onclick="document.getElementById('addSubjectModal').style.display='none'" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+        <h2>Add Subject</h2>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Subject Name</label>
+                <input type="text" name="name" class="form-control" placeholder="e.g., Mathematics" required>
+            </div>
+            <div class="form-group">
+                <label>Subject Code</label>
+                <input type="text" name="code" class="form-control" placeholder="e.g., MATH101" required>
+            </div>
+            <div class="form-group">
+                <label>Batch</label>
+                <select name="batch" class="form-control" required>
+                    <option value="">Select Batch</option>
+                    {% for batch in batches %}
+                    <option value="{{ batch.id }}">{{ batch.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Create Subject</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

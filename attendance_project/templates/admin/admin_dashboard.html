@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - AMS{% endblock %}
+{% block header_title %}Admin Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="welcome-banner fade-in">
+    <h2>👋 Welcome, Admin!</h2>
+    <p>Here's what's happening in your institute today.</p>
+</div>
+
+<div class="dashboard-stats fade-in">
+    <div class="stat-card gradient-purple">
+        <div class="stat-icon">👥</div>
+        <h3>{{ total_students }}</h3>
+        <p>Total Students</p>
+    </div>
+    <div class="stat-card gradient-blue">
+        <div class="stat-icon">👨‍🏫</div>
+        <h3>{{ total_teachers }}</h3>
+        <p>Total Teachers</p>
+    </div>
+    <div class="stat-card gradient-pink">
+        <div class="stat-icon">📚</div>
+        <h3>{{ total_sessions }}</h3>
+        <p>Total Sessions</p>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <!-- Quick Actions -->
+    <div class="card fade-in">
+        <h3>⚡ Quick Actions</h3>
+        <div class="quick-actions">
+            <a href="{% url 'manage_users' %}" class="action-btn primary">
+                <div class="action-icon">👥</div>
+                <h3>Manage Users</h3>
+                <p>Add or remove teachers/students</p>
+            </a>
+            <a href="{% url 'manage_attendance' %}" class="action-btn secondary">
+                <div class="action-icon">📅</div>
+                <h3>Attendance</h3>
+                <p>View and manage records</p>
+            </a>
+            <a href="{% url 'manage_batches' %}" class="action-btn accent">
+                <div class="action-icon">🎓</div>
+                <h3>Batches</h3>
+                <p>Manage classes & batches</p>
+            </a>
+            <a href="{% url 'admin_attendance_report' %}" class="action-btn success">
+                <div class="action-icon">📊</div>
+                <h3>Reports</h3>
+                <p>Generate & export reports</p>
+            </a>
+        </div>
+    </div>
+
+    <!-- Attendance Chart -->
+    <div class="card fade-in">
+        <h3>📈 Attendance Trends (Last 7 Days)</h3>
+        <div class="chart-container" style="height: 300px;">
+            <canvas id="attendanceChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="card fade-in" style="margin-top: 20px;">
+    <h3>🕒 Recent Activity</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-sno">S.No.</th>
+                    <th class="col-status">Action</th>
+                    <th class="col-username">User</th>
+                    <th class="col-date">Time</th>
+                    <th class="col-name">Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in recent_activity %}
+                <tr>
+                    <td class="col-sno">{{ forloop.counter }}</td>
+                    <td class="col-status" style="font-weight: 600; color: var(--primary-color);">{{ log.action }}</td>
+                    <td class="col-username">{{ log.user.username }}</td>
+                    <td class="col-date">{{ log.timestamp|date:"M d, H:i" }}</td>
+                    <td class="col-name">{{ log.details }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">No recent activity.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{{ chart_labels|json_script:"chart-labels" }}
+{{ chart_data|json_script:"chart-data" }}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/charts.js' %}"></script>
+{% endblock %}

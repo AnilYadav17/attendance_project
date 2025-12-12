@@ -1,0 +1,345 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Welcome - QR
+Attendance System{% endblock %} {% block extra_css %}
+<style>
+  body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .hero-section {
+    background: linear-gradient(
+      135deg,
+      rgba(102, 126, 234, 0.95) 0%,
+      rgba(118, 75, 162, 0.95) 100%
+    );
+    color: white;
+    padding: 100px 20px 80px;
+    text-align: center;
+    border-radius: 0 0 50px 50px;
+    margin-bottom: 60px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="2" fill="white" opacity="0.1"/></svg>');
+    animation: float 20s linear infinite;
+  }
+
+  @keyframes float {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(-100px);
+    }
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .hero-title {
+    font-size: 3.5rem;
+    margin-bottom: 24px;
+    font-weight: 800;
+    animation: fadeInUp 0.8s ease;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .hero-subtitle {
+    font-size: 1.3rem;
+    opacity: 0.95;
+    max-width: 700px;
+    margin: 0 auto 40px;
+    line-height: 1.8;
+    animation: fadeInUp 1s ease;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .cta-buttons {
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    animation: fadeInUp 1.2s ease;
+  }
+
+  .btn-hero {
+    padding: 18px 48px;
+    font-size: 1.15rem;
+    border-radius: 50px;
+    font-weight: 700;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  }
+
+  .btn-light {
+    background: white;
+    color: #667eea;
+  }
+
+  .btn-light:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 12px 32px rgba(255, 255, 255, 0.3);
+  }
+
+  .btn-outline {
+    border: 3px solid white;
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+  }
+
+  .btn-outline:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 12px 32px rgba(255, 255, 255, 0.2);
+  }
+
+  .features-section {
+    padding: 0 20px 60px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-title {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 50px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 32px;
+  }
+
+  .feature-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 40px 32px;
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .feature-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    transform: scaleX(0);
+    transition: transform 0.4s ease;
+  }
+
+  .feature-card:hover::before {
+    transform: scaleX(1);
+  }
+
+  .feature-card:hover {
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+    border-color: rgba(102, 126, 234, 0.5);
+  }
+
+  .feature-icon {
+    font-size: 4.5rem;
+    margin-bottom: 24px;
+    animation: bounce 2s infinite;
+  }
+
+  @keyframes bounce {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .feature-card:nth-child(1) .feature-icon {
+    filter: drop-shadow(0 4px 12px rgba(102, 126, 234, 0.4));
+  }
+
+  .feature-card:nth-child(2) .feature-icon {
+    filter: drop-shadow(0 4px 12px rgba(245, 87, 108, 0.4));
+    animation-delay: 0.2s;
+  }
+
+  .feature-card:nth-child(3) .feature-icon {
+    filter: drop-shadow(0 4px 12px rgba(0, 242, 254, 0.4));
+    animation-delay: 0.4s;
+  }
+
+  .feature-card h3 {
+    font-size: 1.6rem;
+    margin-bottom: 16px;
+    color: #2d3748;
+    font-weight: 700;
+  }
+
+  .feature-card p {
+    color: #718096;
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+
+  .stats-section {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 50px 20px;
+    margin: 60px 20px;
+    border-radius: 30px;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 40px;
+    text-align: center;
+  }
+
+  .stat-item h4 {
+    font-size: 3rem;
+    color: white;
+    font-weight: 800;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .stat-item p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  @media (max-width: 768px) {
+    .hero-title {
+      font-size: 2.5rem;
+    }
+
+    .hero-subtitle {
+      font-size: 1.1rem;
+    }
+
+    .btn-hero {
+      padding: 14px 32px;
+      font-size: 1rem;
+    }
+
+    .features-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="hero-section">
+  <div class="hero-content">
+    <h1 class="hero-title">📱 QR Attendance System</h1>
+    <p class="hero-subtitle">
+      Transform attendance tracking with cutting-edge QR code technology. Fast,
+      secure, and effortless attendance management for modern educational
+      institutions.
+    </p>
+
+    <div class="cta-buttons">
+      <a href="{% url 'login' %}" class="btn btn-light btn-hero">Login Now</a>
+      <a href="{% url 'register' %}" class="btn btn-outline btn-hero"
+        >Student Registration</a
+      >
+    </div>
+  </div>
+</div>
+
+<div class="stats-section">
+  <div class="stats-grid">
+    <div class="stat-item">
+      <h4>⚡</h4>
+      <p>Instant Scanning</p>
+    </div>
+    <div class="stat-item">
+      <h4>🔒</h4>
+      <p>100% Secure</p>
+    </div>
+    <div class="stat-item">
+      <h4>📊</h4>
+      <p>Real-time Analytics</p>
+    </div>
+    <div class="stat-item">
+      <h4>🎯</h4>
+      <p>Accurate Tracking</p>
+    </div>
+  </div>
+</div>
+
+<div class="features-section">
+  <h2 class="section-title">✨ Powerful Features</h2>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">👨‍🏫</div>
+      <h3>For Teachers</h3>
+      <p>
+        Create attendance sessions instantly, generate unique QR codes, and
+        monitor live attendance as students scan in. Manage multiple classes
+        effortlessly.
+      </p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">👨‍🎓</div>
+      <h3>For Students</h3>
+      <p>
+        Mark attendance in seconds by scanning a QR code. View your complete
+        attendance history, track your progress, and never miss a class.
+      </p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>For Admins</h3>
+      <p>
+        Manage users, subjects, and batches with ease. Access detailed reports
+        and analytics to oversee institutional performance and attendance
+        trends.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

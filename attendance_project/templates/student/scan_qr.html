@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Scan QR Code - QR Attendance{% endblock %}
+{% block header_title %}Scan QR Code{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/qr.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="scanner-instructions fade-in">
+    <h3>📱 How to Scan</h3>
+    <p>Point your camera at the QR code displayed by your teacher. Make sure the code is clearly visible and well-lit for best results.</p>
+</div>
+
+<div class="card fade-in" style="text-align: center;">
+    <h3>🎯 Scan Class QR Code</h3>
+    <p style="color: #718096; margin-bottom: 30px;">Allow camera access when prompted to scan the attendance QR code.</p>
+    
+    <div id="reader"></div>
+    
+    <div id="scan-result" class="scan-result"></div>
+    
+    <div style="margin-top: 30px;">
+        <a href="{% url 'student_dashboard' %}" class="btn btn-primary">← Back to Dashboard</a>
+    </div>
+</div>
+
+<div class="card fade-in">
+    <h3>💡 Tips for Successful Scanning</h3>
+    <ul style="color: #718096; line-height: 2;">
+        <li>✓ Ensure good lighting conditions</li>
+        <li>✓ Hold your device steady</li>
+        <li>✓ Keep the QR code within the frame</li>
+        <li>✓ Make sure you're in the correct class session</li>
+    </ul>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/qr_scan.js' %}"></script>
+{% endblock %}

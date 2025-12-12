@@ -1,0 +1,9 @@
+<header class="header">
+    <div class="header-left">
+        <h2>{% block header_title %}Dashboard{% endblock %}</h2>
+    </div>
+    <div class="header-right">
+        <span>Welcome, {{ user.get_full_name|default:user.username }}</span>
+        <a href="{% url 'logout' %}" class="btn btn-danger" style="margin-left: 10px; padding: 5px 10px;">Logout</a>
+    </div>
+</header>

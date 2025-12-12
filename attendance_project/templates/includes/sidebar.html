@@ -1,0 +1,22 @@
+<nav class="sidebar">
+    <div class="sidebar-header">
+        <h3>AMS</h3>
+    </div>
+    <ul class="nav-links">
+        {% if user.is_superuser %}
+            <li><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+            <li><a href="{% url 'manage_users' %}">Manage Users</a></li>
+            <li><a href="{% url 'manage_batches' %}">Manage Batches</a></li>
+            <li><a href="{% url 'manage_attendance' %}">Manage Attendance</a></li>
+            <li><a href="{% url 'export_reports' %}">Export Reports</a></li>
+        {% elif user.is_teacher %}
+            <li><a href="{% url 'teacher_dashboard' %}">Dashboard</a></li>
+            <li><a href="{% url 'manage_subjects' %}">Manage Subjects</a></li>
+            <li><a href="{% url 'create_session' %}">Create Session</a></li>
+        {% elif user.is_student %}
+            <li><a href="{% url 'student_dashboard' %}">Dashboard</a></li>
+            <li><a href="{% url 'scan_qr' %}">Scan QR</a></li>
+            <li><a href="{% url 'attendance_history' %}">History</a></li>
+        {% endif %}
+    </ul>
+</nav>

@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Teacher Dashboard - AMS{% endblock %}
+{% block header_title %}Teacher Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="welcome-banner fade-in">
+    <h2>👋 Welcome, {{ user.get_full_name }}!</h2>
+    <p>Manage your classes and track student attendance.</p>
+</div>
+
+<div class="dashboard-stats fade-in">
+    <div class="stat-card gradient-purple">
+        <div class="stat-icon">🎓</div>
+        <h3>{{ active_sessions.count }}</h3>
+        <p>Active Sessions</p>
+    </div>
+    <div class="stat-card gradient-blue">
+        <div class="stat-icon">📊</div>
+        <h3>{{ overall_attendance_rate|default:"0" }}%</h3>
+        <p>Avg. Attendance</p>
+    </div>
+    <div class="stat-card gradient-pink">
+        <div class="stat-icon">📚</div>
+        <h3>{{ total_teacher_sessions }}</h3>
+        <p>Total Classes</p>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <!-- Quick Actions -->
+    <div class="card fade-in">
+        <h3>⚡ Quick Actions</h3>
+        <div class="quick-actions">
+            <a href="{% url 'create_session' %}" class="action-btn primary">
+                <div class="action-icon">➕</div>
+                <h3>Create Session</h3>
+                <p>Start a new class</p>
+            </a>
+            <a href="{% url 'manage_subjects' %}" class="action-btn secondary">
+                <div class="action-icon">📚</div>
+                <h3>My Subjects</h3>
+                <p>Manage subjects & codes</p>
+            </a>
+        </div>
+    </div>
+
+    <!-- Attendance Chart -->
+    <div class="card fade-in">
+        <h3>📈 Attendance Trend (Last 7 Days)</h3>
+        <div class="chart-container" style="height: 300px;">
+            <canvas id="attendanceChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="card fade-in" style="margin-top: 20px;">
+    <h3>🕒 Active Sessions</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-subjects">Subject</th>
+                    <th class="col-batch">Batch</th>
+                    <th class="col-date">Start Time</th>
+                    <th class="col-actions">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for session in active_sessions %}
+                <tr>
+                    <td class="col-subjects">{{ session.subject.name }}</td>
+                    <td class="col-batch">{{ session.batch.name }}</td>
+                    <td class="col-date">{{ session.start_time|time:"H:i" }}</td>
+                    <td class="col-actions">
+                        <div class="action-buttons">
+                            <a href="{% url 'session_qr' session.session_id %}" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem;">View QR</a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">No active sessions.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card fade-in" style="margin-top: 20px;">
+    <h3>📜 Recent Past Sessions</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-subjects">Subject</th>
+                    <th class="col-batch">Batch</th>
+                    <th class="col-date">Date</th>
+                    <th class="col-students">Attendance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for session in past_sessions %}
+                <tr>
+                    <td class="col-subjects">{{ session.subject.name }}</td>
+                    <td class="col-batch">{{ session.batch.name }}</td>
+                    <td class="col-date">{{ session.start_time|date:"M d, Y" }}</td>
+                    <td class="col-students"><span class="status-badge success">{{ session.records.count }} Present</span></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">No past sessions found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{{ chart_labels|json_script:"chart-labels" }}
+{{ chart_data|json_script:"chart-data" }}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/charts.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Users - AMS{% endblock %}
+{% block header_title %}Manage Users{% endblock %}
+
+{% block content %}
+<div style="display: flex; gap: 20px; margin-bottom: 20px;">
+    <button class="btn btn-primary" onclick="document.getElementById('addTeacherModal').style.display='block'">Add Teacher</button>
+    <button class="btn btn-primary" onclick="document.getElementById('addStudentModal').style.display='block'">Add Student</button>
+</div>
+
+<div class="card">
+    <h3>Teachers</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                    <th class="col-sno">S.No.</th>
+                    <th class="col-name">Name</th>
+                    <th class="col-username">Username</th>
+                    <th class="col-subjects">Subjects</th>
+                    <th class="col-actions">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for teacher in teachers %}
+                <tr>
+                    <td class="col-sno">{{ forloop.counter }}</td>
+                    <td class="col-name">{{ teacher.user.get_full_name }}</td>
+                    <td class="col-username">{{ teacher.user.username }}</td>
+                    <td class="col-subjects">
+                        {% for subject in teacher.subjects.all %}
+                            {{ subject.name }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td class="col-actions">
+                        <div class="action-buttons">
+                            <a href="{% url 'edit_user' teacher.user.id %}" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem; margin: 0; background: var(--primary-color); box-shadow: none;">Edit</a>
+                            <form method="post" style="display: inline; margin: 0;" onsubmit="return confirm('Are you sure?');">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete_user">
+                                <input type="hidden" name="user_id" value="{{ teacher.user.id }}">
+                                <button type="submit" class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem; margin: 0;">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Students</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-sno">S.No.</th>
+                    <th class="col-name">Name</th>
+                    <th class="col-roll">Roll Number</th>
+                    <th class="col-batch">Batch</th>
+                    <th class="col-actions">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td class="col-sno">{{ forloop.counter }}</td>
+                    <td class="col-name">{{ student.user.get_full_name }}</td>
+                    <td class="col-roll">{{ student.roll_number }}</td>
+                    <td class="col-batch">{{ student.batch.name }}</td>
+                    <td class="col-actions">
+                        <div class="action-buttons">
+                            <a href="{% url 'edit_user' student.user.id %}" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem; margin: 0; background: var(--primary-color); box-shadow: none;">Edit</a>
+                            <form method="post" style="display: inline; margin: 0;" onsubmit="return confirm('Are you sure?');">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete_user">
+                                <input type="hidden" name="user_id" value="{{ student.user.id }}">
+                                <button type="submit" class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem; margin: 0;">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modals -->
+<div id="addTeacherModal" class="modal" style="display:none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+    <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 50%; border-radius: 8px;">
+        <span onclick="document.getElementById('addTeacherModal').style.display='none'" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+        <h2>Add Teacher</h2>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_teacher">
+            <div class="form-group"><label>Username</label><input type="text" name="username" class="form-control" required></div>
+            <div class="form-group"><label>Password</label><input type="password" name="password" class="form-control" required></div>
+            <div class="form-group"><label>First Name</label><input type="text" name="first_name" class="form-control" required></div>
+            <div class="form-group"><label>Last Name</label><input type="text" name="last_name" class="form-control" required></div>
+            <div class="form-group"><label>Email</label><input type="email" name="email" class="form-control" required></div>
+            <button type="submit" class="btn btn-primary">Add Teacher</button>
+        </form>
+    </div>
+</div>
+
+<div id="addStudentModal" class="modal" style="display:none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+    <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 50%; border-radius: 8px;">
+        <span onclick="document.getElementById('addStudentModal').style.display='none'" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+        <h2>Add Student</h2>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_student">
+            <div class="form-group"><label>Username</label><input type="text" name="username" class="form-control" required></div>
+            <div class="form-group"><label>Password</label><input type="password" name="password" class="form-control" required></div>
+            <div class="form-group"><label>First Name</label><input type="text" name="first_name" class="form-control" required></div>
+            <div class="form-group"><label>Last Name</label><input type="text" name="last_name" class="form-control" required></div>
+            <div class="form-group"><label>Email</label><input type="email" name="email" class="form-control" required></div>
+            <div class="form-group"><label>Roll Number</label><input type="text" name="roll_number" class="form-control" required></div>
+            <div class="form-group">
+                <label>Batch</label>
+                <select name="batch" class="form-control">
+                    <option value="">Select Batch</option>
+                    {% for batch in batches %}
+                    <option value="{{ batch.id }}">{{ batch.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Student</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

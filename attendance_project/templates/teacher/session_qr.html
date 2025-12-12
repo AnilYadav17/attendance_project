@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Session QR - AMS{% endblock %}
+{% block header_title %}Live Attendance Session{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/qr.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="card" style="text-align: center;">
+    <h3>{{ session.subject.name }} - {{ session.batch.name }}</h3>
+    <p>Scan this QR code to mark attendance</p>
+    
+    <div style="margin-bottom: 20px;">
+        <a href="{% url 'manual_attendance' session.session_id %}" class="btn btn-primary">Manual Entry</a>
+    </div>
+    
+    <div class="qr-display">
+        <div id="qr-code-container" style="display: inline-block; padding: 10px; background: white;"></div>
+        <div class="live-count">
+            Present: <span id="attendance-count">{{ session.records.count }}</span>
+        </div>
+    </div>
+    
+    <div style="margin-top: 30px;">
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" name="end_session" class="btn btn-danger">End Session</button>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Live Attendance Log</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody id="attendance-list">
+                {% for record in session.records.all %}
+                <tr>
+                    <td>{{ record.student.user.get_full_name }}</td>
+                    <td>{{ record.timestamp|date:"H:i:s" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    const sessionId = "{{ session.session_id }}";
+    
+    // Dynamic QR Logic
+    const qrContainer = document.getElementById("qr-code-container");
+    let qrCodeObj = null;
+
+    function updateQR() {
+        fetch(`/api/session/${sessionId}/qr-data/`)
+        .then(res => res.json())
+        .then(data => {
+            if(data.qr_data) {
+                if(!qrCodeObj) {
+                     qrContainer.innerHTML = "";
+                     qrCodeObj = new QRCode(qrContainer, {
+                        text: data.qr_data,
+                        width: 256,
+                        height: 256,
+                        colorDark : "#000000",
+                        colorLight : "#ffffff",
+                        correctLevel : QRCode.CorrectLevel.H
+                    });
+                } else {
+                    qrCodeObj.clear();
+                    qrCodeObj.makeCode(data.qr_data);
+                }
+            }
+        })
+        .catch(err => console.error("QR Fetch Error:", err));
+    }
+
+    // Update QR every 2 seconds
+    updateQR();
+    setInterval(updateQR, 2000);
+
+    function updateAttendance() {
+        fetch(`/api/session/${sessionId}/attendance/`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('attendance-count').innerText = data.count;
+            
+            const list = document.getElementById('attendance-list');
+            list.innerHTML = '';
+            data.attendance.forEach(record => {
+                const row = `<tr><td>${record.student}</td><td>${record.timestamp}</td></tr>`;
+                list.innerHTML += row;
+            });
+        });
+    }
+    
+    // Poll attendance every 5 seconds
+    setInterval(updateAttendance, 5000);
+</script>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Export Reports - AMS{% endblock %}
+{% block header_title %}Export Reports{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h3>Export Attendance Data</h3>
+    <p>Download the complete attendance history as a CSV file.</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Download CSV</button>
+    </form>
+</div>
+{% endblock %}

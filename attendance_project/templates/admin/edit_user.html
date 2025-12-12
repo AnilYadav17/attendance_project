@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit User - Admin{% endblock %}
+{% block header_title %}Edit User{% endblock %}
+
+{% block content %}
+<div class="card fade-in" style="max-width: 600px; margin: 0 auto;">
+    <h3>✏️ Edit {{ target_user.get_full_name }}</h3>
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" class="form-control" value="{{ target_user.username }}" disabled style="background: #f8f9fa;">
+        </div>
+        
+        <div class="form-group">
+            <label>First Name</label>
+            <input type="text" name="first_name" class="form-control" value="{{ target_user.first_name }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" name="last_name" class="form-control" value="{{ target_user.last_name }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" class="form-control" value="{{ target_user.email }}" required>
+        </div>
+        
+        {% if target_user.is_student %}
+        <div class="form-group">
+            <label>Roll Number</label>
+            <input type="text" name="roll_number" class="form-control" value="{{ target_user.student_profile.roll_number }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Batch</label>
+            <select name="batch" class="form-control" required>
+                {% for batch in batches %}
+                <option value="{{ batch.id }}" {% if target_user.student_profile.batch.id == batch.id %}selected{% endif %}>
+                    {{ batch.name }} ({{ batch.year }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+        
+        <div style="margin-top: 24px; display: flex; gap: 12px;">
+            <button type="submit" class="btn btn-primary" style="flex: 1;">Save Changes</button>
+            <a href="{% url 'manage_users' %}" class="btn btn-danger" style="flex: 1;">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

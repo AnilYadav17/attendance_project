@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Subject - AMS{% endblock %}
+{% block header_title %}Edit Subject{% endblock %}
+
+{% block content %}
+<div class="card fade-in" style="max-width: 600px; margin: 0 auto;">
+    <h3>✏️ Edit Subject</h3>
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label>Subject Name</label>
+            <input type="text" name="name" class="form-control" value="{{ subject.name }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Subject Code</label>
+            <input type="text" name="code" class="form-control" value="{{ subject.code }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Batch</label>
+            <select name="batch" class="form-control" required>
+                {% for batch in batches %}
+                <option value="{{ batch.id }}" {% if subject.batch.id == batch.id %}selected{% endif %}>
+                    {{ batch.name }} ({{ batch.year }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div style="margin-top: 24px; display: flex; gap: 12px;">
+            <button type="submit" class="btn btn-primary" style="flex: 1;">Save Changes</button>
+            <a href="{% url 'manage_subjects' %}" class="btn btn-danger" style="flex: 1;">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

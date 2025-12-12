@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Attendance - AMS{% endblock %}
+{% block header_title %}Manage Attendance{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h3>All Attendance Sessions</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Teacher</th>
+                    <th>Subject</th>
+                    <th>Batch</th>
+                    <th>Status</th>
+                    <th>Records</th>
+                    <th class="col-actions">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for session in sessions %}
+                <tr>
+                    <td>{{ session.start_time|date:"M d, Y H:i" }}</td>
+                    <td>{{ session.teacher.user.get_full_name }}</td>
+                    <td>{{ session.subject.name }}</td>
+                    <td>{{ session.batch.name }}</td>
+                    <td>
+                        {% if session.is_active %}
+                        <span style="color: green; font-weight: bold;">Active</span>
+                        {% else %}
+                        <span style="color: grey;">Ended</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ session.records.count }}</td>
+                    <td class="col-actions">
+                        <button class="btn btn-primary" onclick="toggleRecords('{{ session.session_id }}')" style="padding: 5px 10px; font-size: 0.8rem;">View Records</button>
+                    </td>
+                </tr>
+                <tr id="records-{{ session.session_id }}" style="display: none; background-color: #f9f9f9;">
+                    <td colspan="7">
+                        <div style="padding: 10px 20px;">
+                            <h4>Attendance Records</h4>
+                            <table style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Time</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for record in session.records.all %}
+                                    <tr>
+                                        <td>{{ record.student.user.get_full_name }} ({{ record.student.roll_number }})</td>
+                                        <td>{{ record.timestamp|date:"H:i:s" }}</td>
+                                        <td>
+                                            <form action="{% url 'delete_attendance_record' record.id %}" method="post" onsubmit="return confirm('Delete this record?');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger" style="padding: 2px 5px; font-size: 0.7rem;">Remove</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr><td colspan="3">No records found.</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">No sessions found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function toggleRecords(sessionId) {
+    var row = document.getElementById('records-' + sessionId);
+    if (row.style.display === 'none') {
+        row.style.display = 'table-row';
+    } else {
+        row.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

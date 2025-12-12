@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Manual Attendance - AMS{% endblock %}
+{% block header_title %}Manual Attendance Entry{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h3>{{ session.subject.name }} - {{ session.batch.name }}</h3>
+    <p>Date: {{ session.start_time|date:"M d, Y H:i" }}</p>
+    <p>Present: <strong>{{ present_students|length }}</strong> / {{ session.batch.students.count }}</p>
+    
+    <div style="margin-top: 20px;">
+        <a href="{% url 'session_qr' session.session_id %}" class="btn btn-primary">View QR Code</a>
+        <a href="{% url 'teacher_dashboard' %}" class="btn" style="background: #95a5a6; color: white;">Back to Dashboard</a>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+    <div class="card">
+        <h3 style="color: green;">Present Students ({{ present_students|length }})</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="col-sno">S.No.</th>
+                        <th class="col-name">Student Name</th>
+                        <th class="col-roll">Roll Number</th>
+                        <th class="col-date">Time Marked</th>
+                        <th class="col-actions">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in present_students %}
+                    <tr>
+                        <td class="col-sno">{{ forloop.counter }}</td>
+                        <td class="col-name">{{ record.student.user.get_full_name }}</td>
+                        <td class="col-roll">{{ record.student.roll_number }}</td>
+                        <td class="col-date">{{ record.timestamp|time:"H:i:s" }}</td>
+                        <td class="col-actions">
+                            <div class="action-buttons">
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="unmark">
+                                    <input type="hidden" name="record_id" value="{{ record.id }}">
+                                    <button type="submit" class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem;">Unmark</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5">No students marked present yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h3 style="color: red;">Absent Students ({{ absent_students|length }})</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="col-sno">S.No.</th>
+                        <th class="col-name">Student Name</th>
+                        <th class="col-roll">Roll Number</th>
+                        <th class="col-actions">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in absent_students %}
+                    <tr>
+                        <td class="col-sno">{{ forloop.counter }}</td>
+                        <td class="col-name">{{ student.user.get_full_name }}</td>
+                        <td class="col-roll">{{ student.roll_number }}</td>
+                        <td class="col-actions">
+                             <div class="action-buttons">
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="mark">
+                                    <input type="hidden" name="student_id" value="{{ student.id }}">
+                                    <button type="submit" class="btn btn-success" style="padding: 6px 12px; font-size: 0.8rem;">Mark Present</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4">No students marked absent yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
