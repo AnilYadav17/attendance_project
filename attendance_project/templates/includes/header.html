@@ -4,6 +4,7 @@
     </div>
     <div class="header-right">
         <span>Welcome, {{ user.get_full_name|default:user.username }}</span>
-        <a href="{% url 'logout' %}" class="btn btn-danger" style="margin-left: 10px; padding: 5px 10px;">Logout</a>
+        <a href="{% url 'profile' %}" class="btn btn-primary" style="margin-left: 10px; padding: 5px 10px; background-color: #4a90e2; border-color: #4a90e2;">Profile</a>
+        <a href="{% url 'logout' %}" class="btn btn-danger" style="margin-left: 5px; padding: 5px 10px;">Logout</a>
     </div>
 </header>

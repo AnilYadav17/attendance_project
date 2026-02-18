@@ -1,0 +1,251 @@
+{% extends 'base.html' %} {% load static %} {% block title %}My Profile{%
+endblock %} {% block header_title %}My Profile{% endblock %} {% block extra_css
+%}
+<style>
+  .profile-container {
+    max_width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  .profile-header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  .profile-avatar {
+    width: 100px;
+    height: 100px;
+    background-color: var(--primary-color, #4a90e2);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    margin: 0 auto 15px;
+    text-transform: uppercase;
+  }
+  .form-group {
+    margin-bottom: 20px;
+  }
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+  }
+  .form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+  }
+  .form-control:focus {
+    border-color: var(--primary-color, #4a90e2);
+    outline: none;
+  }
+  .form-control[readonly] {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+  }
+  .btn-save {
+    background-color: var(--primary-color, #4a90e2);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+  }
+  .btn-save:hover {
+    background-color: #357abd;
+  }
+  .role-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    background-color: #e2e8f0;
+    color: #4a5568;
+    margin-top: 5px;
+  }
+  .role-badge.student {
+    background-color: #ebf8ff;
+    color: #2b6cb0;
+  }
+  .role-badge.teacher {
+    background-color: #f0fff4;
+    color: #2f855a;
+  }
+  .role-badge.admin {
+    background-color: #fff5f5;
+    color: #c53030;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="profile-container fade-in">
+  <div class="card">
+    <div class="profile-header">
+      <div class="profile-avatar">
+        {{ user.first_name|first|default:user.username|first }}
+      </div>
+      <h2>{{ user.get_full_name|default:user.username }}</h2>
+      <p class="text-muted">
+        {% if user.is_superuser %}
+        <span class="role-badge admin">Administrator</span>
+        {% elif user.is_teacher %}
+        <span class="role-badge teacher">Teacher</span>
+        {% elif user.is_student %}
+        <span class="role-badge student">Student</span>
+        {% endif %}
+      </p>
+    </div>
+
+    <form method="POST" action="{% url 'profile' %}">
+      {% csrf_token %}
+
+      <div class="dashboard-grid">
+        <!-- Personal Information -->
+        <div style="grid-column: span 12">
+          <h3
+            style="
+              margin-bottom: 20px;
+              border-bottom: 1px solid #eee;
+              padding-bottom: 10px;
+            "
+          >
+            Personal Information
+          </h3>
+        </div>
+
+        <div class="form-group" style="grid-column: span 6">
+          <label for="username">Username</label>
+          <input
+            type="text"
+            id="username"
+            class="form-control"
+            value="{{ user.username }}"
+            readonly
+          />
+          <small style="color: #666">Username cannot be changed.</small>
+        </div>
+
+        <div class="form-group" style="grid-column: span 6">
+          <label for="email">Email Address</label>
+          <input
+            type="email"
+            name="email"
+            id="email"
+            class="form-control"
+            value="{{ user.email }}"
+          />
+        </div>
+
+        <div class="form-group" style="grid-column: span 6">
+          <label for="first_name">First Name</label>
+          <input
+            type="text"
+            name="first_name"
+            id="first_name"
+            class="form-control"
+            value="{{ user.first_name }}"
+          />
+        </div>
+
+        <div class="form-group" style="grid-column: span 6">
+          <label for="last_name">Last Name</label>
+          <input
+            type="text"
+            name="last_name"
+            id="last_name"
+            class="form-control"
+            value="{{ user.last_name }}"
+          />
+        </div>
+
+        <!-- Academic Information (ReadOnly) -->
+        {% if user.is_student %}
+        <div style="grid-column: span 12; margin-top: 20px">
+          <h3
+            style="
+              margin-bottom: 20px;
+              border-bottom: 1px solid #eee;
+              padding-bottom: 10px;
+            "
+          >
+            Academic Information
+          </h3>
+        </div>
+
+        <div class="form-group" style="grid-column: span 6">
+          <label>Roll Number</label>
+          <input
+            type="text"
+            class="form-control"
+            value="{{ user.student_profile.roll_number }}"
+            readonly
+          />
+        </div>
+
+        <div class="form-group" style="grid-column: span 6">
+          <label>Batch</label>
+          <input
+            type="text"
+            class="form-control"
+            value="{{ user.student_profile.batch.name }} ({{ user.student_profile.batch.year }})"
+            readonly
+          />
+        </div>
+        {% endif %} {% if user.is_teacher %}
+        <div style="grid-column: span 12; margin-top: 20px">
+          <h3
+            style="
+              margin-bottom: 20px;
+              border-bottom: 1px solid #eee;
+              padding-bottom: 10px;
+            "
+          >
+            Academic Information
+          </h3>
+        </div>
+
+        <div class="form-group" style="grid-column: span 12">
+          <label>Assigned Subjects</label>
+          <div
+            style="
+              background: #f8f9fa;
+              padding: 15px;
+              border-radius: 6px;
+              border: 1px solid #ddd;
+            "
+          >
+            {% for subject in user.teacher_profile.subjects.all %}
+            <span
+              class="role-badge"
+              style="
+                margin-right: 5px;
+                margin-bottom: 5px;
+                background: #e2e8f0;
+                color: #2d3748;
+              "
+            >
+              {{ subject.name }} ({{ subject.code }}) - {{ subject.batch.name }}
+            </span>
+            {% empty %}
+            <p style="color: #666; margin: 0">No subjects assigned yet.</p>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <div style="grid-column: span 12; margin-top: 20px">
+          <button type="submit" class="btn-save">Update Profile</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

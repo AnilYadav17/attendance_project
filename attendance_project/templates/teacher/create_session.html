@@ -13,7 +13,7 @@
             <select name="subject" id="subject" class="form-control" required>
                 <option value="">Select Subject</option>
                 {% for subject in subjects %}
-                    <option value="{{ subject.id }}">{{ subject.name }} ({{ subject.code }})</option>
+                    <option value="{{ subject.id }}">{{ subject.name }} ({{ subject.code }}) — {{ subject.batch.name }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -28,7 +28,7 @@
             </select>
         </div>
         
-        <button type="submit" class="btn btn-primary" style="width: 100%;">Generate QR Code</button>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Start Session</button>
     </form>
 </div>
 {% endblock %}

@@ -59,17 +59,27 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'attendance_project.wsgi.application'
 
-# Database
+# Database – this project uses attendance_db1. Credentials from .env (DB_USER, DB_PASSWORD, DB_HOST, DB_PORT)
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+
+DATABASE_NAME = 'attendance_db1'  # fixed for this project
+_db_user = os.getenv('DB_USER', 'admin')
+_db_password = os.getenv('DB_PASSWORD', '202020')
+_db_host = os.getenv('DB_HOST', 'localhost')
+_db_port = os.getenv('DB_PORT', '3306')
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME':  'attendance_db',
-        'USER': 'admin',
-        'PASSWORD':'202020',
-        'HOST': 'localhost',
-        # 'PORT': '3306',
+        'NAME': DATABASE_NAME,
+        'USER': _db_user,
+        'PASSWORD': _db_password,
+        'HOST': _db_host,
+        'PORT': _db_port,
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
 }
 

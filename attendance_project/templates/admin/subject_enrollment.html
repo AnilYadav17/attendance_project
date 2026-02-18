@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Subject Enrollment - Admin{% endblock %}
+{% block header_title %}Subject Enrollment (Backlog Support){% endblock %}
+
+{% block content %}
+<div class="card fade-in">
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
+        <span style="font-size: 2rem;">🔗</span>
+        <div>
+            <h2 style="margin: 0; color: var(--text-color);">Enroll Students in {{ subject.name }}</h2>
+            <p style="margin: 0; color: var(--text-muted);">
+                Subject: <strong>{{ subject.code }}</strong> | 
+                Batch: <strong>{{ subject.batch }}</strong> | 
+                Semester: <strong>{{ subject.semester }}</strong>
+            </p>
+        </div>
+    </div>
+
+    <blockquote>
+        [!NOTE]
+        Students belonging to the primary batch (<strong>{{ subject.batch }}</strong>) are automatically enrolled and do not need to be selected here. Use this interface to enroll <strong>Backlog</strong> or <strong>Special Case</strong> students from other batches.
+    </blockquote>
+
+    <form method="post" class="enrollment-form">
+        {% csrf_token %}
+        
+        <div class="search-container" style="margin-bottom: 20px;">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="studentSearch" class="form-control search-input" placeholder="Search students by name or roll number..." onkeyup="filterStudents()">
+        </div>
+
+        <div class="table-container" style="max-height: 500px; overflow-y: auto;">
+            <table id="studentTable">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">Select</th>
+                        <th>Student Name</th>
+                        <th>Roll Number</th>
+                        <th>Year</th>
+                        <th>Primary Batch</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" name="students" value="{{ student.id }}" {% if student.id in enrolled_ids %}checked{% endif %} style="width: 20px; height: 20px; cursor: pointer;">
+                        </td>
+                        <td>{{ student.user.get_full_name }}</td>
+                        <td><span class="status-badge low">{{ student.roll_number }}</span></td>
+                        <td>{{ student.batch.year }}</td>
+                        <td>{{ student.batch.name }} - Sec {{ student.batch.section }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4">No students available for external enrollment.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 30px; display: flex; gap: 15px;">
+            <button type="submit" class="btn btn-primary" style="flex: 2; height: 50px; font-weight: 700; background: var(--primary-gradient);">
+                💾 Save Enrollment Changes
+            </button>
+            <a href="{% url 'manage_subjects' %}" class="btn btn-danger" style="flex: 1; height: 50px; display: flex; align-items: center; justify-content: center;">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function filterStudents() {
+    var input = document.getElementById("studentSearch");
+    var filter = input.value.toUpperCase();
+    var table = document.getElementById("studentTable");
+    var tr = table.getElementsByTagName("tr");
+
+    for (var i = 1; i < tr.length; i++) {
+        var found = false;
+        var tds = tr[i].getElementsByTagName("td");
+        for (var j = 1; j < tds.length; j++) {
+            if (tds[j]) {
+                var txtValue = tds[j].textContent || tds[j].innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+        tr[i].style.display = found ? "" : "none";
+    }
+}
+</script>
+{% endblock %}

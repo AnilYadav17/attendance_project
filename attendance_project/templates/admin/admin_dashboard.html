@@ -70,30 +70,32 @@
 </div>
 
 <div class="card fade-in" style="margin-top: 20px;">
-    <h3>🕒 Recent Activity</h3>
+    <h3>Recent Sessions</h3>
     <div class="table-container">
         <table>
             <thead>
                 <tr>
-                    <th class="col-sno">S.No.</th>
-                    <th class="col-status">Action</th>
-                    <th class="col-username">User</th>
-                    <th class="col-date">Time</th>
-                    <th class="col-name">Details</th>
+                    <th class="col-sno">#</th>
+                    <th class="col-name">Subject</th>
+                    <th class="col-batch">Batch</th>
+                    <th class="col-username">Teacher</th>
+                    <th class="col-date">Started</th>
+                    <th class="col-status">Status</th>
                 </tr>
             </thead>
             <tbody>
-                {% for log in recent_activity %}
+                {% for s in recent_sessions %}
                 <tr>
                     <td class="col-sno">{{ forloop.counter }}</td>
-                    <td class="col-status" style="font-weight: 600; color: var(--primary-color);">{{ log.action }}</td>
-                    <td class="col-username">{{ log.user.username }}</td>
-                    <td class="col-date">{{ log.timestamp|date:"M d, H:i" }}</td>
-                    <td class="col-name">{{ log.details }}</td>
+                    <td>{{ s.subject.name }}</td>
+                    <td>{{ s.batch.name }}</td>
+                    <td>{{ s.teacher.user.get_full_name }}</td>
+                    <td>{{ s.start_time|date:"M d, H:i" }}</td>
+                    <td><span class="status-badge {% if s.is_active %}present{% else %}ended{% endif %}">{% if s.is_active %}Active{% else %}Ended{% endif %}</span></td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5">No recent activity.</td>
+                    <td colspan="6">No sessions yet.</td>
                 </tr>
                 {% endfor %}
             </tbody>

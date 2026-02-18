@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Direct Semester Backlog - AMS{% endblock %}
+{% block header_title %}Direct Semester Backlog Enrollment{% endblock %}
+
+{% block content %}
+<div class="card fade-in">
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
+        <span style="font-size: 2rem;">📚</span>
+        <div>
+            <h2 style="margin: 0; color: var(--text-color);">Bulk Enrollment for Full Semester</h2>
+            <p style="margin: 0; color: var(--text-muted);">
+                Enroll one or more students into <strong>ALL subjects</strong> of a specific semester for a target batch.
+            </p>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+            <div class="form-group">
+                <label>Target Junior Batch</label>
+                <select name="target_batch" class="form-control" required>
+                    <option value="">-- Select Target Batch --</option>
+                    {% for batch in batches %}
+                    <option value="{{ batch.id }}">{{ batch }}</option>
+                    {% endfor %}
+                </select>
+                <small style="color: var(--text-muted);">Select the batch these students will attend classes with.</small>
+            </div>
+            
+            <div class="form-group">
+                <label>Semester (Backlog)</label>
+                <select name="semester" class="form-control" required>
+                    <option value="">-- Select Semester --</option>
+                    {% for i in "12345678"|make_list %}
+                    <option value="{{ i }}">Semester {{ i }}</option>
+                    {% endfor %}
+                </select>
+                <small style="color: var(--text-muted);">The semester curriculum they need to repeat.</small>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 25px; padding: 15px; border: 1px solid var(--border-color); box-shadow: none;">
+            <h4 style="margin-top: 0;">Select Backlog Students</h4>
+            
+            <div class="search-container" style="margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div style="position: relative;">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="studentSearch" class="form-control search-input" placeholder="Search by name or roll number..." onkeyup="filterStudents()">
+                </div>
+                <select id="batchFilter" class="form-control" onchange="filterStudents()">
+                    <option value="">-- All Batches --</option>
+                    {% for batch in batches %}
+                    <option value="{{ batch }}">{{ batch }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+                <table id="studentTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;"><input type="checkbox" onclick="toggleAll(this)"></th>
+                            <th>Student Name</th>
+                            <th>Roll Number</th>
+                            <th>Current Batch</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" name="students" value="{{ student.id }}" class="student-checkbox" style="width: 18px; height: 18px; cursor: pointer;">
+                            </td>
+                            <td>{{ student.user.get_full_name }}</td>
+                            <td><span class="status-badge low">{{ student.roll_number }}</span></td>
+                            <td>{{ student.batch }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Reason (Optional)</label>
+            <input type="text" name="reason" class="form-control" placeholder="e.g., Failed multiple subjects in Sem 3...">
+        </div>
+
+        <div style="margin-top: 30px; display: flex; gap: 15px;">
+            <button type="submit" class="btn btn-primary" style="flex: 2; height: 50px; font-weight: 700;">
+                {% if user.is_superuser %}🚀 Enroll Students Now (Bulk){% else %}📨 Request Admin Confirmation (Bulk){% endif %}
+            </button>
+            <a href="{% url 'teacher_dashboard' %}" class="btn btn-danger" style="flex: 1; height: 50px; display: flex; align-items: center; justify-content: center;">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+function filterStudents() {
+    var searchInput = document.getElementById("studentSearch");
+    var filter = searchInput.value.toUpperCase();
+    var batchFilter = document.getElementById("batchFilter").value.toUpperCase();
+    var table = document.getElementById("studentTable");
+    var tr = table.getElementsByTagName("tr");
+
+    for (var i = 1; i < tr.length; i++) {
+        var foundSearch = false;
+        var foundBatch = false;
+        var tds = tr[i].getElementsByTagName("td");
+        
+        // Search filter (Name or Roll Number)
+        var nameText = tds[1] ? (tds[1].textContent || tds[1].innerText).toUpperCase() : "";
+        var rollText = tds[2] ? (tds[2].textContent || tds[2].innerText).toUpperCase() : "";
+        
+        if (nameText.indexOf(filter) > -1 || rollText.indexOf(filter) > -1) {
+            foundSearch = true;
+        }
+
+        // Batch filter
+        var batchText = tds[3] ? (tds[3].textContent || tds[3].innerText).toUpperCase() : "";
+        if (batchFilter === "" || batchText === batchFilter) {
+            foundBatch = true;
+        }
+
+        tr[i].style.display = (foundSearch && foundBatch) ? "" : "none";
+    }
+}
+
+function toggleAll(source) {
+    checkboxes = document.getElementsByClassName('student-checkbox');
+    // Only toggle visible checkboxes
+    for(var i=0, n=checkboxes.length;i<n;i++) {
+        if(checkboxes[i].closest('tr').style.display !== 'none') {
+            checkboxes[i].checked = source.checked;
+        }
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Syllabus - AMS{% endblock %}
+{% block header_title %}Syllabus{% endblock %}
+{% block content %}
+<div class="card">
+    <h3>Syllabus for your subjects</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Subject</th>
+                    <th>Batch</th>
+                    <th>Title</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in syllabi %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ s.subject.name }}</td>
+                    <td>{{ s.batch.name }}</td>
+                    <td>{{ s.title|default:"—" }}</td>
+                    <td><a href="{{ s.file.url }}" class="btn btn-primary" style="padding:4px 12px;font-size:0.85rem;" target="_blank">Download</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5">No syllabus available for your subjects yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

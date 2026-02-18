@@ -5,16 +5,26 @@
     <ul class="nav-links">
         {% if user.is_superuser %}
             <li><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+            <li><a href="{% url 'profile' %}">Profile</a></li>
             <li><a href="{% url 'manage_users' %}">Manage Users</a></li>
             <li><a href="{% url 'manage_batches' %}">Manage Batches</a></li>
-            <li><a href="{% url 'manage_attendance' %}">Manage Attendance</a></li>
-            <li><a href="{% url 'export_reports' %}">Export Reports</a></li>
+            <li><a href="{% url 'admin_timetable' %}">Timetable</a></li>
+            <li><a href="{% url 'admin_syllabus' %}">Syllabus</a></li>
+            <li><a href="{% url 'manage_attendance' %}">Attendance</a></li>
+            <li><a href="{% url 'admin_attendance_report' %}">Reports</a></li>
+            <li><a href="{% url 'export_reports' %}">Export CSV</a></li>
         {% elif user.is_teacher %}
             <li><a href="{% url 'teacher_dashboard' %}">Dashboard</a></li>
+            <li><a href="{% url 'profile' %}">Profile</a></li>
             <li><a href="{% url 'manage_subjects' %}">Manage Subjects</a></li>
+            <li><a href="{% url 'teacher_timetable' %}">My Timetable</a></li>
+            <li><a href="{% url 'teacher_syllabus' %}">Syllabus</a></li>
             <li><a href="{% url 'create_session' %}">Create Session</a></li>
         {% elif user.is_student %}
             <li><a href="{% url 'student_dashboard' %}">Dashboard</a></li>
+            <li><a href="{% url 'profile' %}">Profile</a></li>
+            <li><a href="{% url 'student_timetable' %}">Timetable</a></li>
+            <li><a href="{% url 'student_syllabus' %}">Syllabus</a></li>
             <li><a href="{% url 'scan_qr' %}">Scan QR</a></li>
             <li><a href="{% url 'attendance_history' %}">History</a></li>
         {% endif %}

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}My Timetable - AMS{% endblock %}
+{% block header_title %}My Timetable{% endblock %}
+{% block content %}
+<div class="card">
+    <p class="text-muted" style="margin-bottom: 1rem;">Filter by day:</p>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem;">
+        <a href="{% url 'teacher_timetable' %}" class="btn {% if selected_day is None %}btn-primary{% endif %}" style="padding: 6px 12px;">All</a>
+        {% for d in days %}
+        <a href="{% url 'teacher_timetable' %}?day={{ d.num }}" class="btn {% if selected_day == d.num %}btn-primary{% endif %}" style="padding: 6px 12px;">{{ d.name }}</a>
+        {% endfor %}
+    </div>
+    <h3>Slots</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Day</th>
+                    <th>Time</th>
+                    <th>Subject</th>
+                    <th>Batch</th>
+                    <th>Room</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in slots %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ s.get_day_of_week_display }}</td>
+                    <td>{{ s.start_time|time:"H:i" }} – {{ s.end_time|time:"H:i" }}</td>
+                    <td>{{ s.subject.name }}</td>
+                    <td>{{ s.batch.name }}</td>
+                    <td>{{ s.room|default:"—" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6">No slots assigned for you yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

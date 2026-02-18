@@ -27,17 +27,19 @@ A complete Attendance Management System built with Django, MySQL, and QR-code tr
 
 4. **Configure Database**:
 
-   - Create a MySQL database named `attendance_db`.
-   - Copy `.env.example` to `.env` and update the credentials:
+   - Create a MySQL/MariaDB database (e.g. `attendance_db1`).
+   - Copy `.env.example` to `.env` and set DB credentials (so they are not hardcoded):
      ```bash
      cp .env.example .env
      ```
+     In `.env` set: `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` (optional). The database name is fixed to `attendance_db1`.
 
-5. **Run Migrations**:
+5. **Run Migrations** (use the safe script to avoid conflicts – see **Migrations** below):
 
    ```bash
    python manage.py migrate
    ```
+   Or run the one-command safe migrator: `./scripts/migrate_safe.sh`
 
 6. **Create Superuser**:
 
@@ -49,6 +51,25 @@ A complete Attendance Management System built with Django, MySQL, and QR-code tr
    ```bash
    python manage.py runserver
    ```
+
+## Migrations – avoiding and fixing errors
+
+To avoid **“Conflicting migrations / multiple leaf nodes”** and **“Table already exists”**:
+
+- **Always create new migrations from the latest state**: run `python manage.py migrate` before `makemigrations` so there is only one leaf.
+- **Use the safe migrator** (recommended): `./scripts/migrate_safe.sh` – it merges conflicts if needed, then runs migrate.
+
+**If you already see an error:**
+
+1. **“Conflicting migrations detected; multiple leaf nodes”**  
+   - Run: `python manage.py makemigrations --merge --noinput`  
+   - Then: `python manage.py migrate`
+
+2. **“Table '…' already exists”** (migration was half-applied or DB was created elsewhere)  
+   - Mark that migration as applied without running SQL:  
+     `python manage.py migrate <app_name> <migration_name> --fake`  
+   - Example: `python manage.py migrate attendance_project 0003_notification --fake`  
+   - Then run: `python manage.py migrate`
 
 ## Project Structure
 

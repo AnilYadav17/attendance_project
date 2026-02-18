@@ -11,6 +11,7 @@ urlpatterns = [
     path('', views.index_view, name='index'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
+    path('profile/', views.profile, name='profile'),
     path('register/', views.register_view, name='register'),
     
     # Custom Admin
@@ -23,10 +24,14 @@ urlpatterns = [
     path('dashboard/admin/batches/edit/<int:batch_id>/', views.edit_batch, name='edit_batch'),
     path('dashboard/admin/report/', views.admin_attendance_report, name='admin_attendance_report'),
     path('dashboard/admin/export/', views.export_reports, name='export_reports'),
+    path('dashboard/admin/timetable/', views.admin_timetable, name='admin_timetable'),
+    path('dashboard/admin/syllabus/', views.admin_syllabus, name='admin_syllabus'),
     
     # Teacher
     path('dashboard/teacher/', views.teacher_dashboard, name='teacher_dashboard'),
     path('teacher/subjects/', views.manage_subjects, name='manage_subjects'),
+    path('teacher/timetable/', views.teacher_timetable, name='teacher_timetable'),
+    path('teacher/syllabus/', views.teacher_syllabus, name='teacher_syllabus'),
     path('teacher/subjects/edit/<int:subject_id>/', views.edit_subject, name='edit_subject'),
     path('session/create/', views.create_session, name='create_session'),
     path('session/<uuid:session_id>/qr/', views.session_qr, name='session_qr'),
@@ -39,6 +44,8 @@ urlpatterns = [
     path('scan/', views.scan_qr, name='scan_qr'),
     path('api/mark-attendance/', views.mark_attendance, name='mark_attendance'),
     path('history/', views.attendance_history, name='attendance_history'),
+    path('timetable/', views.student_timetable, name='student_timetable'),
+    path('syllabus/', views.student_syllabus, name='student_syllabus'),
 ]
 
 if settings.DEBUG:

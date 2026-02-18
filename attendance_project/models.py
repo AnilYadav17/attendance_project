@@ -72,3 +72,43 @@ class AuditLog(models.Model):
 
     def __str__(self):
         return f"{self.action} by {self.user} at {self.timestamp}"
+
+
+class TimetableSlot(models.Model):
+    """Single slot: day + time + subject + batch + faculty. Uploaded/managed by Admin."""
+    DAY_CHOICES = [(i, d) for i, d in enumerate(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])]
+    day_of_week = models.PositiveSmallIntegerField(choices=DAY_CHOICES)  # 0=Mon, 5=Sat
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='timetable_slots')
+    batch = models.ForeignKey(Batch, on_delete=models.CASCADE, related_name='timetable_slots')
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='timetable_slots')
+    room = models.CharField(max_length=50, blank=True)
+
+    class Meta:
+        ordering = ['day_of_week', 'start_time']
+        unique_together = [('batch', 'day_of_week', 'start_time')]
+
+    def __str__(self):
+        return f"{self.get_day_of_week_display()} {self.start_time}-{self.end_time} | {self.subject.name} | {self.batch.name}"
+
+
+def syllabus_upload_path(instance, filename):
+    return f"syllabus/{instance.batch.id}/{instance.subject.code}_{filename}"
+
+
+class Syllabus(models.Model):
+    """Syllabus document per subject per batch. Uploaded by Admin."""
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='syllabus_docs')
+    batch = models.ForeignKey(Batch, on_delete=models.CASCADE, related_name='syllabus_docs')
+    title = models.CharField(max_length=200, blank=True)
+    file = models.FileField(upload_to=syllabus_upload_path)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+
+    class Meta:
+        ordering = ['-uploaded_at']
+        unique_together = [('subject', 'batch')]
+
+    def __str__(self):
+        return f"{self.subject.name} - {self.batch.name}"

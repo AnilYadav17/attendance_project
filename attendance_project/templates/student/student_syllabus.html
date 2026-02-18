@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Syllabus - AMS{% endblock %}
+{% block header_title %}Syllabus{% endblock %}
+{% block content %}
+<div class="card">
+    {% if no_batch %}
+    <p class="text-muted">You are not assigned to a batch. Contact admin.</p>
+    {% else %}
+    <h3>Syllabus for your batch</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Subject</th>
+                    <th>Title</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in syllabi %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ s.subject.name }}</td>
+                    <td>{{ s.title|default:"—" }}</td>
+                    <td><a href="{{ s.file.url }}" class="btn btn-primary" style="padding:4px 12px;font-size:0.85rem;" target="_blank">Download</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4">No syllabus uploaded for your batch yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

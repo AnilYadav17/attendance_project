@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Timetable - AMS{% endblock %}
+{% block header_title %}Timetable{% endblock %}
+{% block content %}
+<div class="card">
+    <h3>Add slot</h3>
+    <form method="post" class="form-inline-grid">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Day</label>
+            <select name="day_of_week" class="form-control" required>
+                <option value="0">Monday</option>
+                <option value="1">Tuesday</option>
+                <option value="2">Wednesday</option>
+                <option value="3">Thursday</option>
+                <option value="4">Friday</option>
+                <option value="5">Saturday</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Start</label>
+            <input type="time" name="start_time" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label>End</label>
+            <input type="time" name="end_time" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label>Subject</label>
+            <select name="subject" class="form-control" required>
+                <option value="">Select</option>
+                {% for s in subjects %}<option value="{{ s.id }}">{{ s.name }} ({{ s.batch.name }})</option>{% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Batch</label>
+            <select name="batch" class="form-control" required>
+                <option value="">Select</option>
+                {% for b in batches %}<option value="{{ b.id }}">{{ b.name }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Faculty</label>
+            <select name="teacher" class="form-control" required>
+                <option value="">Select</option>
+                {% for t in teachers %}<option value="{{ t.id }}">{{ t.user.get_full_name }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Room</label>
+            <input type="text" name="room" class="form-control" placeholder="Optional">
+        </div>
+        <div class="form-group" style="align-self: end;">
+            <button type="submit" class="btn btn-primary">Add slot</button>
+        </div>
+    </form>
+</div>
+<div class="card">
+    <h3>All slots</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Day</th>
+                    <th>Time</th>
+                    <th>Subject</th>
+                    <th>Batch</th>
+                    <th>Faculty</th>
+                    <th>Room</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in slots %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ s.get_day_of_week_display }}</td>
+                    <td>{{ s.start_time|time:"H:i" }} – {{ s.end_time|time:"H:i" }}</td>
+                    <td>{{ s.subject.name }}</td>
+                    <td>{{ s.batch.name }}</td>
+                    <td>{{ s.teacher.user.get_full_name }}</td>
+                    <td>{{ s.room|default:"—" }}</td>
+                    <td>
+                        <form method="post" style="display:inline;" onsubmit="return confirm('Remove this slot?');">
+                            {% csrf_token %}
+                            <input type="hidden" name="delete" value="1">
+                            <input type="hidden" name="slot_id" value="{{ s.id }}">
+                            <button type="submit" class="btn btn-danger" style="padding:4px 10px;font-size:0.8rem;">Remove</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8">No slots. Add one above.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

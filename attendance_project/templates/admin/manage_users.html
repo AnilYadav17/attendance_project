@@ -14,6 +14,7 @@
     <div class="table-container">
         <table>
             <thead>
+                <tr>
                     <th class="col-sno">S.No.</th>
                     <th class="col-name">Name</th>
                     <th class="col-username">Username</th>
@@ -89,9 +90,9 @@
 </div>
 
 <!-- Modals -->
-<div id="addTeacherModal" class="modal" style="display:none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
-    <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 50%; border-radius: 8px;">
-        <span onclick="document.getElementById('addTeacherModal').style.display='none'" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+<div id="addTeacherModal" class="modal" style="display:none; position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);">
+    <div class="modal-light" style="margin: 10% auto; padding: 24px; max-width: 480px;">
+        <span class="modal-close" onclick="document.getElementById('addTeacherModal').style.display='none'" style="float: right; font-size: 24px; line-height: 1;">&times;</span>
         <h2>Add Teacher</h2>
         <form method="post">
             {% csrf_token %}
@@ -106,9 +107,9 @@
     </div>
 </div>
 
-<div id="addStudentModal" class="modal" style="display:none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
-    <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 50%; border-radius: 8px;">
-        <span onclick="document.getElementById('addStudentModal').style.display='none'" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+<div id="addStudentModal" class="modal" style="display:none; position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);">
+    <div class="modal-light" style="margin: 10% auto; padding: 24px; max-width: 480px;">
+        <span class="modal-close" onclick="document.getElementById('addStudentModal').style.display='none'" style="float: right; font-size: 24px; line-height: 1;">&times;</span>
         <h2>Add Student</h2>
         <form method="post">
             {% csrf_token %}

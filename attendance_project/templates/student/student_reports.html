@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}My Attendance Report - AMS{% endblock %}
+{% block header_title %}Download My Report{% endblock %}
+
+{% block content %}
+<div class="card fade-in" style="max-width: 600px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
+        <span style="font-size: 2rem;">👤</span>
+        <div>
+            <h2 style="margin: 0; color: var(--text-color);">Personal Attendance History</h2>
+            <p style="margin: 0; color: var(--text-muted);">Generate a CSV file of your own attendance records.</p>
+        </div>
+    </div>
+
+    <form method="post" class="report-form">
+        {% csrf_token %}
+        
+        <div class="form-group" style="margin-bottom: 25px;">
+            <label style="display: block; margin-bottom: 10px; color: var(--text-muted); font-weight: 500;">📅 Choose Timeframe</label>
+            <select name="range" class="form-control" style="background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-color); padding: 12px; border-radius: 12px; width: 100%;">
+                <option value="all">Overall History</option>
+                <option value="week">Past 7 Days</option>
+                <option value="month">Past 30 Days</option>
+                <option value="custom">Custom Date Range</option>
+            </select>
+        </div>
+
+        <div class="form-group custom-date" style="display: none; margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 10px; color: var(--text-muted); font-weight: 500;">Start Date</label>
+            <input type="date" name="start_date" class="form-control" style="background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-color); padding: 12px; border-radius: 12px; width: 100%;">
+        </div>
+
+        <div class="form-group custom-date" style="display: none; margin-bottom: 25px;">
+            <label style="display: block; margin-bottom: 10px; color: var(--text-muted); font-weight: 500;">End Date</label>
+            <input type="date" name="end_date" class="form-control" style="background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-color); padding: 12px; border-radius: 12px; width: 100%;">
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-weight: 700; background: var(--primary-gradient); border-radius: 15px; font-size: 1.1rem; box-shadow: var(--shadow-md);">
+                📥 Download My Report (.csv)
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.querySelector('select[name="range"]').addEventListener('change', function() {
+        const customDates = document.querySelectorAll('.custom-date');
+        if (this.value === 'custom') {
+            customDates.forEach(el => el.style.display = 'block');
+        } else {
+            customDates.forEach(el => el.style.display = 'none');
+        }
+    });
+</script>
+{% endblock %}

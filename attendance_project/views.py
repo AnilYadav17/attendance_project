@@ -4,16 +4,10 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
-from django.db.models import Count, Q
-from django.conf import settings
-from .models import User, Student, Teacher, Batch, Subject, AttendanceSession, AttendanceRecord, AuditLog
-import qrcode
+from .models import User, Student, Teacher, Batch, Subject, AttendanceSession, AttendanceRecord, TimetableSlot, Syllabus
 import json
 import csv
 import uuid
-import os
-from io import BytesIO
-from django.core.files.base import ContentFile
 from django.core import signing
 import time
 
@@ -58,6 +52,20 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('index')
+
+@login_required
+def profile(request):
+    user = request.user
+    
+    if request.method == 'POST':
+        user.first_name = request.POST.get('first_name')
+        user.last_name = request.POST.get('last_name')
+        user.email = request.POST.get('email')
+        user.save()
+        messages.success(request, 'Profile updated successfully')
+        return redirect('profile')
+        
+    return render(request, 'profile.html', {'user': user})
 
 def register_view(request):
     batches = Batch.objects.all()
@@ -119,27 +127,26 @@ def admin_dashboard(request):
     total_students = Student.objects.count()
     total_teachers = Teacher.objects.count()
     total_sessions = AttendanceSession.objects.count()
-    recent_activity = AuditLog.objects.order_by('-timestamp')[:10]
-    
-    # Calculate daily attendance for the last 7 days for chart
+    recent_sessions = AttendanceSession.objects.select_related(
+        'teacher__user', 'subject', 'batch'
+    ).order_by('-start_time')[:10]
+
     from datetime import timedelta
     today = timezone.now().date()
     last_7_days = [today - timedelta(days=i) for i in range(6, -1, -1)]
-    
     chart_labels = [day.strftime('%a') for day in last_7_days]
-    chart_data = [] # Total attendance records per day
-    
-    for day in last_7_days:
-        count = AttendanceRecord.objects.filter(timestamp__date=day).count()
-        chart_data.append(count)
+    chart_data = [
+        AttendanceRecord.objects.filter(timestamp__date=day).count()
+        for day in last_7_days
+    ]
 
     context = {
         'total_students': total_students,
         'total_teachers': total_teachers,
         'total_sessions': total_sessions,
-        'recent_activity': recent_activity,
+        'recent_sessions': recent_sessions,
         'chart_labels': chart_labels,
-        'chart_data': chart_data
+        'chart_data': chart_data,
     }
     return render(request, 'admin/admin_dashboard.html', context)
 
@@ -262,7 +269,6 @@ def manage_batches(request):
         return redirect('manage_batches')
         
     batches = Batch.objects.all().order_by('-year', 'name')
-    batches = Batch.objects.all().order_by('-year', 'name')
     return render(request, 'admin/manage_batches.html', {'batches': batches})
 
 @login_required
@@ -383,8 +389,6 @@ def export_reports(request):
                 record.student.user.get_full_name(),
                 record.status
             ])
-        
-        return response
         return response
     return render(request, 'admin/export_reports.html')
 
@@ -441,19 +445,17 @@ def teacher_dashboard(request):
         ).count()
         chart_data.append(count)
 
-    # Calculate average attendance rate for this teacher
-    total_teacher_sessions = AttendanceSession.objects.filter(teacher=teacher, is_active=False).count()
+    # Average attendance rate: one query with prefetch (no N+1)
+    completed_sessions = list(AttendanceSession.objects.filter(
+        teacher=teacher, is_active=False
+    ).prefetch_related('batch__students', 'records'))
+    total_teacher_sessions = len(completed_sessions)
     overall_attendance_rate = 0
     if total_teacher_sessions > 0:
-        total_possible_attendance = 0
-        actual_attendance = 0
-        sessions = AttendanceSession.objects.filter(teacher=teacher, is_active=False)
-        for s in sessions:
-            total_possible_attendance += s.batch.students.count()
-            actual_attendance += s.records.count()
-        
-        if total_possible_attendance > 0:
-            overall_attendance_rate = round((actual_attendance / total_possible_attendance) * 100, 1)
+        total_possible = sum(len(s.batch.students.all()) for s in completed_sessions)
+        actual = sum(len(s.records.all()) for s in completed_sessions)
+        if total_possible > 0:
+            overall_attendance_rate = round((actual / total_possible) * 100, 1)
 
     return render(request, 'teacher/teacher_dashboard.html', {
         'active_sessions': active_sessions,
@@ -471,60 +473,36 @@ def create_session(request):
     if request.method == 'POST':
         subject_id = request.POST.get('subject')
         batch_id = request.POST.get('batch')
-        
         subject = get_object_or_404(Subject, id=subject_id)
         batch = get_object_or_404(Batch, id=batch_id)
-        
-        session = AttendanceSession.objects.create(
-            teacher=teacher,
-            subject=subject,
-            batch=batch
-        )
-        
-        # Generate QR Code
-        qr_data = f"{session.session_id}"
-        qr = qrcode.QRCode(
-            version=1,
-            error_correction=qrcode.constants.ERROR_CORRECT_L,
-            box_size=10,
-            border=4,
-        )
-        qr.add_data(qr_data)
-        qr.make(fit=True)
-        
-        img = qr.make_image(fill_color="black", back_color="white")
-        
-        # Save QR code to media
-        blob = BytesIO()
-        img.save(blob, 'PNG')
-        file_name = f'qr_{session.session_id}.png'
-        
-        # Ensure directory exists
-        qr_dir = os.path.join(settings.MEDIA_ROOT, 'qr_codes')
-        os.makedirs(qr_dir, exist_ok=True)
-        
-        with open(os.path.join(qr_dir, file_name), 'wb') as f:
-            f.write(blob.getvalue())
-            
+        # Real-world: session must be for a subject this teacher teaches, and subject must belong to the selected batch
+        if subject not in teacher.subjects.all():
+            messages.error(request, 'You can only create sessions for subjects you teach.')
+            subjects = teacher.subjects.all()
+            batches = Batch.objects.filter(subjects__in=subjects).distinct().order_by('-year', 'name')
+            return render(request, 'teacher/create_session.html', {'subjects': subjects, 'batches': batches})
+        if subject.batch != batch:
+            messages.error(request, 'Selected subject does not belong to the selected batch.')
+            subjects = teacher.subjects.all()
+            batches = Batch.objects.filter(subjects__in=subjects).distinct().order_by('-year', 'name')
+            return render(request, 'teacher/create_session.html', {'subjects': subjects, 'batches': batches})
+        session = AttendanceSession.objects.create(teacher=teacher, subject=subject, batch=batch)
         return redirect('session_qr', session_id=session.session_id)
-        
-    subjects = teacher.subjects.all()
-    batches = Batch.objects.all() # Or filter by what the teacher teaches if that relationship existed
+    # Only show subjects teacher teaches and batches that have those subjects
+    subjects = teacher.subjects.all().select_related('batch')
+    batches = Batch.objects.filter(subjects__in=subjects).distinct().order_by('-year', 'name')
     return render(request, 'teacher/create_session.html', {'subjects': subjects, 'batches': batches})
 
 @login_required
 @user_passes_test(is_teacher)
 def session_qr(request, session_id):
     session = get_object_or_404(AttendanceSession, session_id=session_id, teacher=request.user.teacher_profile)
-    qr_url = f"{settings.MEDIA_URL}qr_codes/qr_{session.session_id}.png"
-    
     if request.method == 'POST' and 'end_session' in request.POST:
         session.is_active = False
         session.end_time = timezone.now()
         session.save()
         return redirect('teacher_dashboard')
-        
-    return render(request, 'teacher/session_qr.html', {'session': session, 'qr_url': qr_url})
+    return render(request, 'teacher/session_qr.html', {'session': session})
 
 @login_required
 @user_passes_test(is_teacher)
@@ -717,3 +695,124 @@ def attendance_history(request):
     student = request.user.student_profile
     records = AttendanceRecord.objects.filter(student=student).order_by('-timestamp')
     return render(request, 'student/attendance_history.html', {'records': records})
+
+
+# --- Timetable & Syllabus (Admin upload; Faculty & Student view) ---
+
+@login_required
+@user_passes_test(is_admin)
+def admin_timetable(request):
+    slots = TimetableSlot.objects.select_related('subject', 'batch', 'teacher__user').order_by('day_of_week', 'start_time')
+    batches = Batch.objects.all()
+    subjects = Subject.objects.all()
+    teachers = Teacher.objects.select_related('user').all()
+    if request.method == 'POST':
+        if 'delete' in request.POST:
+            slot_id = request.POST.get('slot_id')
+            TimetableSlot.objects.filter(id=slot_id).delete()
+            messages.success(request, 'Slot removed.')
+        else:
+            day = request.POST.get('day_of_week')
+            start = request.POST.get('start_time')
+            end = request.POST.get('end_time')
+            subject_id = request.POST.get('subject')
+            batch_id = request.POST.get('batch')
+            teacher_id = request.POST.get('teacher')
+            room = request.POST.get('room', '')
+            if day and start and end and subject_id and batch_id and teacher_id:
+                TimetableSlot.objects.create(
+                    day_of_week=int(day),
+                    start_time=start,
+                    end_time=end,
+                    subject_id=subject_id,
+                    batch_id=batch_id,
+                    teacher_id=teacher_id,
+                    room=room
+                )
+                messages.success(request, 'Timetable slot added.')
+        return redirect('admin_timetable')
+    return render(request, 'admin/admin_timetable.html', {
+        'slots': slots, 'batches': batches, 'subjects': subjects, 'teachers': teachers
+    })
+
+
+@login_required
+@user_passes_test(is_admin)
+def admin_syllabus(request):
+    syllabi = Syllabus.objects.select_related('subject', 'batch', 'uploaded_by').order_by('-uploaded_at')
+    batches = Batch.objects.all()
+    subjects = Subject.objects.all()
+    if request.method == 'POST':
+        if 'delete' in request.POST:
+            s = get_object_or_404(Syllabus, id=request.POST.get('syllabus_id'))
+            s.delete()
+            messages.success(request, 'Syllabus removed.')
+        else:
+            subject_id = request.POST.get('subject')
+            batch_id = request.POST.get('batch')
+            title = request.POST.get('title', '')
+            f = request.FILES.get('file')
+            if subject_id and batch_id and f:
+                Syllabus.objects.update_or_create(
+                    subject_id=subject_id,
+                    batch_id=batch_id,
+                    defaults={
+                        'title': title or None,
+                        'file': f,
+                        'uploaded_by': request.user
+                    }
+                )
+                messages.success(request, 'Syllabus uploaded.')
+        return redirect('admin_syllabus')
+    return render(request, 'admin/admin_syllabus.html', {
+        'syllabi': syllabi, 'batches': batches, 'subjects': subjects
+    })
+
+
+@login_required
+@user_passes_test(is_teacher)
+def teacher_timetable(request):
+    teacher = request.user.teacher_profile
+    day = request.GET.get('day')
+    slots = TimetableSlot.objects.filter(teacher=teacher).select_related('subject', 'batch').order_by('day_of_week', 'start_time')
+    selected_day = None
+    if day and day.isdigit() and 0 <= int(day) <= 5:
+        selected_day = int(day)
+        slots = slots.filter(day_of_week=selected_day)
+    days = [{'num': i, 'name': d} for i, d in enumerate(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])]
+    return render(request, 'teacher/teacher_timetable.html', {'slots': slots, 'days': days, 'selected_day': selected_day})
+
+
+@login_required
+@user_passes_test(is_teacher)
+def teacher_syllabus(request):
+    teacher = request.user.teacher_profile
+    subjects = teacher.subjects.all()
+    syllabi = Syllabus.objects.filter(subject__in=subjects).select_related('subject', 'batch').order_by('subject__name')
+    return render(request, 'teacher/teacher_syllabus.html', {'syllabi': syllabi})
+
+
+@login_required
+@user_passes_test(is_student)
+def student_timetable(request):
+    student = request.user.student_profile
+    if not student.batch:
+        return render(request, 'student/student_timetable.html', {'slots': [], 'days': [], 'no_batch': True, 'selected_day': None})
+    day = request.GET.get('day')
+    slots = TimetableSlot.objects.filter(batch=student.batch).select_related('subject', 'teacher__user').order_by('day_of_week', 'start_time')
+    selected_day = None
+    if day and day.isdigit() and 0 <= int(day) <= 5:
+        selected_day = int(day)
+        slots = slots.filter(day_of_week=selected_day)
+    days = [{'num': i, 'name': d} for i, d in enumerate(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])]
+    return render(request, 'student/student_timetable.html', {'slots': slots, 'days': days, 'selected_day': selected_day})
+
+
+@login_required
+@user_passes_test(is_student)
+def student_syllabus(request):
+    student = request.user.student_profile
+    if not student.batch:
+        return render(request, 'student/student_syllabus.html', {'syllabi': [], 'no_batch': True})
+    syllabi = Syllabus.objects.filter(batch=student.batch).select_related('subject').order_by('subject__name')
+    return render(request, 'student/student_syllabus.html', {'syllabi': syllabi})

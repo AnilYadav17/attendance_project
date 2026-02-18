@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Enrollment Requests - AMS{% endblock %}
+{% block header_title %}Enrollment Requests{% endblock %}
+
+{% block content %}
+<div class="card fade-in">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3>Student Enrollment Requests</h3>
+        
+        <div class="search-container" style="margin-bottom: 0; width: 300px;">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="requestSearch" class="form-control search-input" placeholder="Search requests..." onkeyup="filterTable('requestSearch', 'requestsTable')">
+        </div>
+    </div>
+
+    {% if requests %}
+    <div class="table-container">
+        <table id="requestsTable">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Student Name</th>
+                    <th>Roll Number</th>
+                    <th>Batch Info</th>
+                    <th>Subject</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr>
+                    <td>{{ req.created_at|date:"M d, Y" }}</td>
+                    <td>{{ req.student.user.get_full_name }}</td>
+                    <td>{{ req.student.roll_number }}</td>
+                    <td>
+                        {% if req.student.batch %}
+                            {{ req.student.batch.name }} - Sec {{ req.student.batch.section }} ({{ req.student.batch.year }})
+                        {% else %}
+                            <span class="text-muted">No Batch</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ req.subject.name }} ({{ req.subject.code }})</td>
+                    <td>{{ req.reason|truncatechars:50 }}</td>
+                    <td>
+                        {% if req.status == 'approved' %}
+                            <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">Approved</span>
+                        {% elif req.status == 'rejected' %}
+                            <span class="badge" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">Rejected</span>
+                        {% else %}
+                            <span class="badge" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">Pending</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+        <p>No enrollment requests found.</p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function filterTable(inputId, tableId) {
+    var input, filter, table, tr, td, i, j, txtValue, found;
+    input = document.getElementById(inputId);
+    filter = input.value.toUpperCase();
+    table = document.getElementById(tableId);
+    tr = table.getElementsByTagName("tr");
+
+    for (i = 1; i < tr.length; i++) {
+        found = false;
+        td = tr[i].getElementsByTagName("td");
+        for (j = 0; j < td.length; j++) {
+            if (td[j]) {
+                txtValue = td[j].textContent || td[j].innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if (found) {
+            tr[i].style.display = "";
+        } else {
+            tr[i].style.display = "none";
+        }
+    }
+}
+</script>
+{% endblock %}
