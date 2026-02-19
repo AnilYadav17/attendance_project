@@ -261,8 +261,9 @@ def manage_batches(request):
         else:
             name = request.POST.get('name')
             year = request.POST.get('year')
-            if Batch.objects.filter(name=name).exists():
-                messages.error(request, 'Batch name already exists')
+            # Check for exact duplicate (name AND year)
+            if Batch.objects.filter(name=name, year=year).exists():
+                messages.error(request, 'Batch with this name and year already exists')
             else:
                 Batch.objects.create(name=name, year=year)
                 messages.success(request, 'Batch created successfully')
@@ -280,9 +281,9 @@ def edit_batch(request, batch_id):
         name = request.POST.get('name')
         year = request.POST.get('year')
         
-        # Check for duplicates excluding current batch
-        if Batch.objects.filter(name=name).exclude(id=batch_id).exists():
-            messages.error(request, 'Batch name already exists')
+        # Check for duplicates excluding current batch (name AND year combination)
+        if Batch.objects.filter(name=name, year=year).exclude(id=batch_id).exists():
+            messages.error(request, 'Batch with this name and year already exists')
         else:
             batch.name = name
             batch.year = year

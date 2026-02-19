@@ -15,29 +15,40 @@
 </div>
 <div class="card">
     <h3>Uploaded syllabi</h3>
-    <table>
-        <thead><tr><th>#</th><th>Subject</th><th>Batch</th><th>Uploaded</th><th>Link</th><th>Action</th></tr></thead>
-        <tbody>
-            {% for s in syllabi %}
-            <tr>
-                <td>{{ forloop.counter }}</td>
-                <td>{{ s.subject.name }}</td>
-                <td>{{ s.batch.name }}</td>
-                <td>{{ s.uploaded_at|date:"d M Y" }}</td>
-                <td><a href="{{ s.file.url }}" class="btn btn-primary" target="_blank">Download</a></td>
-                <td>
-                    <form method="post" style="display:inline;" onsubmit="return confirm('Remove?');">
-                        {% csrf_token %}
-                        <input type="hidden" name="delete" value="1">
-                        <input type="hidden" name="syllabus_id" value="{{ s.id }}">
-                        <button type="submit" class="btn btn-danger">Remove</button>
-                    </form>
-                </td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="6">No syllabus uploaded yet.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Subject</th>
+                    <th>Batch</th>
+                    <th>Uploaded</th>
+                    <th>Link</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in syllabi %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ s.subject.name }}</td>
+                    <td>{{ s.batch.name }}</td>
+                    <td>{{ s.uploaded_at|date:"d M Y" }}</td>
+                    <td><a href="{{ s.file.url }}" class="btn btn-primary" target="_blank">Download</a></td>
+                    <td>
+                        <form method="post" style="display:inline;" onsubmit="return confirm('Remove?');">
+                            {% csrf_token %}
+                            <input type="hidden" name="delete" value="1">
+                            <input type="hidden" name="syllabus_id" value="{{ s.id }}">
+                            <button type="submit" class="btn btn-danger">Remove</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6">No syllabus uploaded yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}

@@ -11,7 +11,7 @@ class User(AbstractUser):
         return self.username
 
 class Batch(models.Model):
-    name = models.CharField(max_length=50, unique=True) # e.g., "Class 10 A"
+    name = models.CharField(max_length=50) # e.g., "Class 10 A"
     year = models.IntegerField()
 
     def __str__(self):
