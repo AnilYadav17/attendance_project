@@ -1,94 +1,131 @@
-# Attendance Management System
+# 🎯 Attendance Management System (AMS)
 
-A complete Attendance Management System built with Django, MySQL, and QR-code tracking.
+![AMS Banner](assets/branding/banner.png)
 
-## Features
+[![Django](https://img.shields.io/badge/Framework-Django%204.2-092E20?style=for-the-badge&logo=django)](https://www.djangoproject.com/)
+[![MySQL](https://img.shields.io/badge/Database-MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg?style=for-the-badge)](https://github.com/AnilYadav17/Attendance-Management-System)
 
-- **Admin**: Manage users, subjects, batches, and view reports.
-- **Teacher**: Create attendance sessions, generate QR codes, and monitor live attendance.
-- **Student**: Scan QR codes to mark attendance and view history.
+> **Elevate Institutional Efficiency** with a state-of-the-art geo-fenced QR attendance ecosystem. Secure, instant, and architected for scale.
 
-## Setup Instructions
+---
 
-1. **Clone the repository** (if applicable) or navigate to the project directory.
+## 🌟 Overview
 
-2. **Create a Virtual Environment**:
+The **Attendance Management System (AMS)** is a robust, enterprise-grade solution designed to eliminate attendance fraud and automate academic tracking. Leveraging **Geo-fencing validation** and **Dynamic HMAC-signed QR codes**, it ensures that students are physically present in the classroom during the scan.
 
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
+---
 
-3. **Install Dependencies**:
+## 🚀 Core Features
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+### 🔐 Multi-Role Architecture
+- **Admin Orchestration**: High-level control over Users (Faculty/Students), Batches, and Global subjects. Access to critical **Audit Logs** for security forensic analysis.
+- **Faculty Command Center**: Real-time session generation with customizable geo-fencing radius and dynamic QR rotating engine.
+- **Student Portal**: Seamless mobile-first scanning experience with automated location verification and attendance history tracking.
 
-4. **Configure Database**:
+### 🛡️ Next-Gen Security
+- **Geo-Fencing Validation**: Pinpoint GPS accuracy checks to prevent off-site scanning.
+- **Dynamic QR Engine**: Self-rotating QR codes prevent session reuse and unauthorized photo-sharing.
+- **HMAC Signing**: All QR data is cryptographically signed with a limited TTL (Time-To-Live).
+- **Audit Logging**: Comprehensive traceability for every sensitive action performed within the system.
 
-   - Create a MySQL/MariaDB database (e.g. `attendance_db1`).
-   - Copy `.env.example` to `.env` and set DB credentials (so they are not hardcoded):
-     ```bash
-     cp .env.example .env
-     ```
-     In `.env` set: `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` (optional). The database name is fixed to `attendance_db1`.
+---
 
-5. **Run Migrations** (use the safe script to avoid conflicts – see **Migrations** below):
+## 🛠️ Technology Stack
 
-   ```bash
-   python manage.py migrate
-   ```
-   Or run the one-command safe migrator: `./scripts/migrate_safe.sh`
+| Layer | Technology |
+|---|---|
+| **Backend** | Python 3.x, Django 4.2+ |
+| **Database** | MySQL / MariaDB (Optimized with `utf8mb4`) |
+| **Frontend** | HTML5 (Semantic), Vanilla CSS (Custom Design System), JS (ES6+) |
+| **QR Engine** | `qrcode` (Py) & `html5-qrcode` (JS) |
+| **Analytics** | Chart.js for real-time visualization |
 
-6. **Create Superuser**:
+---
 
-   ```bash
-   python manage.py createsuperuser
-   ```
+## 🏗️ System Architecture
 
-7. **Run Server**:
-   ```bash
-   python manage.py runserver
-   ```
+```mermaid
+graph TD
+    A[Student Mobile] -->|Scan QR + GPS| B(Django API)
+    C[Teacher Dashboard] -->|Generate Signed QR| B
+    B -->|Verify Location| D[(MySQL Database)]
+    B -->|Check Token TTL| D
+    E[Admin Dashboard] -->|Monitor Audit Logs| D
+    B -->|Response| A
+```
 
-## Migrations – avoiding and fixing errors
+---
 
-To avoid **“Conflicting migrations / multiple leaf nodes”** and **“Table already exists”**:
+## ⚙️ Installation & Setup
 
-- **Always create new migrations from the latest state**: run `python manage.py migrate` before `makemigrations` so there is only one leaf.
-- **Use the safe migrator** (recommended): `./scripts/migrate_safe.sh` – it merges conflicts if needed, then runs migrate.
+### 1. Environment Preparation
+```bash
+# Clone and enter
+git clone https://github.com/AnilYadav17/Attendance-Management-System.git
+cd Attendance-Management-System
 
-**If you already see an error:**
+# Initialize Virtual Env
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
 
-1. **“Conflicting migrations detected; multiple leaf nodes”**  
-   - Run: `python manage.py makemigrations --merge --noinput`  
-   - Then: `python manage.py migrate`
+### 2. Database Configuration
+1. Create a MySQL database named `attendance_db1`.
+2. Configure your credentials in `.env`:
+```env
+DB_USER=your_user
+DB_PASSWORD=your_password
+DB_HOST=localhost
+DB_PORT=3306
+SECRET_KEY=generate_a_secure_key
+```
 
-2. **“Table '…' already exists”** (migration was half-applied or DB was created elsewhere)  
-   - Mark that migration as applied without running SQL:  
-     `python manage.py migrate <app_name> <migration_name> --fake`  
-   - Example: `python manage.py migrate attendance_management_system 0003_notification --fake`  
-   - Then run: `python manage.py migrate`
+### 3. Deployment
+```bash
+# Apply migrations
+python manage.py migrate
 
-## Project Structure
+# Initialize Superuser
+python manage.py createsuperuser
 
-- `attendance_management_system/`: Main project and app directory.
-- `templates/`: HTML templates organized by role.
-- `static/`: CSS and JS files.
-- `media/`: Generated QR codes and uploads.
-- `sql/`: Database schema file.
+# Launch Platform
+python manage.py runserver
+```
 
-## Usage
+---
 
-1. **Admin**: Log in with superuser credentials to manage the system.
-2. **Teacher**: Admin creates teacher accounts. Teachers can then log in to create sessions.
-3. **Student**: Admin creates student accounts. Students can log in to scan QR codes.
+## 📂 Project Structure
 
-## Technologies
+```text
+├── attendance_management_system/   # Core Application Logic
+│   ├── migrations/                 # Database Schema Evolutions
+│   ├── static/                     # Premium CSS & JS Assets
+│   ├── templates/                  # Modular HTML Architecture
+│   └── settings.py                 # System Configuration
+├── media/                          # Generated QR & Branded Assets
+├── manage.py                       # CLI Gateway
+└── requirements.txt                # Dependency Manifest
+```
 
-- Backend: Django
-- Database: MySQL
-- Frontend: HTML, CSS, JavaScript
-- QR Code: `qrcode` (Python), `html5-qrcode` (JS)
-- Charts: Chart.js
+---
+
+## 🤝 Contributing
+
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📜 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+**Developed with ❤️ by [Anil Yadav](https://github.com/AnilYadav17)**
