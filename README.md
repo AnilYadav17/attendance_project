@@ -39,7 +39,7 @@ The **Attendance Management System (AMS)** is a robust, enterprise-grade solutio
 | **Backend** | Python 3.x, Django 4.2+ |
 | **Database** | MySQL / MariaDB (Optimized with `utf8mb4`) |
 | **Frontend** | HTML5 (Semantic), Vanilla CSS (Custom Design System), JS (ES6+) |
-| **QR Engine** | `qrcode` (Py) & `html5-qrcode` (JS) |
+| **QR Engine** | `qrcodejs` (JS Client-side Generation) |
 | **Analytics** | Chart.js for real-time visualization |
 
 ---
@@ -67,8 +67,16 @@ git clone https://github.com/AnilYadav17/Attendance-Management-System.git
 cd Attendance-Management-System
 
 # Initialize Virtual Env
-python3 -m venv venv
+python -m venv venv
+
+# Activate Virtual Env
+# For Windows:
+venv\Scripts\activate
+
+# For Linux/macOS:
 source venv/bin/activate
+
+# Install Dependencies
 pip install -r requirements.txt
 ```
 

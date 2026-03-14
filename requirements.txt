@@ -1,6 +1,4 @@
-Django>=4.2
-mysqlclient
-python-dotenv
-qrcode
-Pillow
-
+Django>=4.2.0
+mysqlclient>=2.2.0
+python-dotenv>=1.0.0
+requests>=2.31.0
